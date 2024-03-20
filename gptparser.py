@@ -3,9 +3,10 @@ from g4f.providers.retry_provider import RetryProviderError
 from config import config
 from util import *
 from time import sleep
+from datetime import datetime
 import json
 
-SYSTEM_PROMPT = "[Output only JSON][no prose]Ты - помощник для парсинга JSON-данных из постов в сообществах. Твоя задача - анализировать каждое мое присланное сообщение и вытягивать из него максимум информации в JSON-формат. Ты должен достать по возможности наименование товара, цену, характеристики, ключевые слова, номер телефона. Формат - JSON со следующими полями: name, description, keywords, price, contact, attributes. Все указанные поля должны быть. Не пиши никаких дополнительных сообщений, отвечай только JSON-содержимым. Не форматируй ответ. Если ты видишь несколько товаров - присылай массив с данными о каждом товаре. Цену выводи как число без сокращений: например '10тыс.р' -> '10000'"
+SYSTEM_PROMPT = "[Output only JSON][no prose]Ты - помощник для парсинга JSON-данных из постов в сообществах. Твоя задача - анализировать каждое мое присланное сообщение и вытягивать из него максимум информации в JSON-формат. Ты должен достать по возможности наименование товара, цену, характеристики, ключевые слова, номер телефона. Формат - JSON со следующими полями: name, description, price, contact. Все указанные поля должны быть. Не пиши никаких дополнительных сообщений, отвечай только JSON-содержимым. Не форматируй ответ. Если ты видишь несколько товаров - присылай массив с данными о каждом товаре. Цену выводи как число без сокращений: например '10тыс.р' -> '10000'"
 _gpt = Client()
 
 
@@ -56,7 +57,7 @@ def process_response(item, response):
 
     if (isinstance(response["price"], str)):
         response["price"] = filter_int(response["price"])
-    response["post_date"] = item["date"]
+    response["post_date"] = datetime.fromtimestamp(item["date"])
     response["post_attachments"] = item["attachments"]
     response["post_id"] = item["id"]
     response["post_owner_id"] = item["owner_id"]

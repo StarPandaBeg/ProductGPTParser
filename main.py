@@ -1,12 +1,17 @@
 from db import *
 from gptparser import parse
-from bson.objectid import ObjectId
+from response_handler import PostgresHandler, MongoHandler
 
 
-def process(db):
-    posts = get_input_collection(db)
-    output = get_output_collection(db)
-    failed = get_failed_collection(db)
+def process():
+    mongo = get_mongo_db()
+    postgres = get_postgres_db()
+
+    posts = get_mongo_input_collection(mongo)
+    failed = get_mongo_failed_collection(mongo)
+
+    success_handler = PostgresHandler(postgres, get_postgres_output_table())
+    fail_handler = MongoHandler(failed)
 
     i = 1
     for item in posts.find():
@@ -15,16 +20,16 @@ def process(db):
 
         print(f"Parsing №{i} ({item_id}) - ", end='')
         status, data = parse(item)
-        target_collection = output if status else failed
+        handler = success_handler if status else fail_handler
 
-        if (isinstance(data, list)):
-            target_collection.insert_many(data)
-        else:
-            target_collection.insert_one(data)
+        try:
+            handler.handle(item, data)
+        except:
+            fail_handler.handle(item, data)
 
         print("OK" if status else "FAIL")
         i += 1
+    postgres.close()
 
 
-db = get_db()
-process(db)
+process()
