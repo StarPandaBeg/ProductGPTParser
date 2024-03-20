@@ -21,6 +21,7 @@ def parse(item):
             parsed = parse_response(response)
             return True, process_response(item, parsed)
         except RetryProviderError as er1:
+            i += 0.001
             continue
         except Exception as e:
             i += 1
