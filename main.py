@@ -1,4 +1,5 @@
 from db import *
+from config import config
 from gptparser import parse
 from response_handler import PostgresHandler, MongoHandler
 
@@ -26,6 +27,9 @@ def process():
             handler.handle(item, data)
         except:
             fail_handler.handle(item, data)
+
+        if (config["delete_processed"]):
+            posts.delete_one({"_id": item_id})
 
         print("OK" if status else "FAIL")
         i += 1

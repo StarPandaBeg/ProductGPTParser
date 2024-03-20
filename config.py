@@ -10,4 +10,5 @@ config = {
     "postgres_output_table": env.get("PGPT_POSTGRES_OUTPUT_TABLE", "output"),
 
     "per_request_delay": int(env.get("PGPT_REQUEST_DELAY", 2)),
+    "delete_processed": env.get("PGPT_DELETE_PROCESSED", "true").lower() in ("true", "1", "t"),
 }
