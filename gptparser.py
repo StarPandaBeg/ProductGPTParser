@@ -2,6 +2,7 @@ from g4f.client import Client
 from g4f.providers.retry_provider import RetryProviderError
 from config import config
 from util import *
+from time import sleep
 import json
 
 SYSTEM_PROMPT = "[Output only JSON][no prose]Ты - помощник для парсинга JSON-данных из постов в сообществах. Твоя задача - анализировать каждое мое присланное сообщение и вытягивать из него максимум информации в JSON-формат. Ты должен достать по возможности наименование товара, цену, характеристики, ключевые слова, номер телефона. Формат - JSON со следующими полями: name, description, keywords, price, contact, attributes. Все указанные поля должны быть. Не пиши никаких дополнительных сообщений, отвечай только JSON-содержимым. Не форматируй ответ. Если ты видишь несколько товаров - присылай массив с данными о каждом товаре. Цену выводи как число без сокращений: например '10тыс.р' -> '10000'"
@@ -13,6 +14,8 @@ def parse(item):
     while i < 3:
         try:
             response = run_gpt(item['text'])
+            sleep(config['per_request_delay'])
+
             if (response == None):
                 continue
             parsed = parse_response(response)
@@ -26,23 +29,14 @@ def parse(item):
 
 
 def run_gpt(text):
-    # prev_messages = []
-    # for p in prev:
-    #     prev_messages.append({"role": "assistant", "content": p})
-    #     prev_messages.append(
-    #         {"role": "client", "content": "Твой ответ оборван, продолжай"})
-
     gpt_response = _gpt.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "client", "content": text}
-        ]  # + prev_messages
+        ]
     )
-
-    if (gpt_response.choices[0].finish_reason == "stop"):
-        return gpt_response.choices[0].message.content
-    return None
+    return gpt_response.choices[0].message.content
 
 
 def parse_response(text):
