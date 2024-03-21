@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from json import dumps
 
 
 class ResponseHandler(ABC):
@@ -28,6 +29,8 @@ class PostgresHandler(ResponseHandler):
             data["description"] = ""
         if "contact" not in data:
             data["contact"] = ""
+        if "post_attachments" in data:
+            data["post_attachments"] = dumps(data["post_attachments"])
         self._db.execute(self._query, data)
 
 
