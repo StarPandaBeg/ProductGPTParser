@@ -14,8 +14,8 @@ def parse(item):
     i = 0.0
     while i < 3:
         try:
-            response = run_gpt(item['text'])
             sleep(config['per_request_delay'])
+            response = run_gpt(item['text'])
 
             if (response == None):
                 continue
